@@ -139,3 +139,8 @@ Press `<localleader>tl` to open the todo list window. You'll see all todos from 
 ## License
 
 MIT
+
+## Future
+
+- [ ] Improve navigation of todo list window.
+- [ ] Add urgent vs import categories.
