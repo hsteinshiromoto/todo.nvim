@@ -17,14 +17,15 @@ A Neovim plugin for managing todo items in Markdown files using the todo.txt for
 The plugin follows this format for todo items:
 
 ```
-- [x] (A) done:2016-05-20 added:2016-04-30 measure space for +chapelShelving @chapel due:2016-05-30
-   │   │   │               │                │                  │              │        └─> Special key:value tag
-   │   │   │               │                │                  │              └─> Context tag
-   │   │   │               │                │                  └─> Project tag
-   │   │   │               │                └─> Description with tags
-   │   │   │               └─> Creation Date (added:YYYY-MM-DD)
-   │   │   └─> Completion Date (done:YYYY-MM-DD)
-   │   └─> Priority (optional)
+- [x] done:2016-05-20 added:2016-04-30 i:H u:M measure space for +chapelShelving @chapel due:2016-05-30
+   │   │               │                │   │   │                  │              │        └─> Special key:value tag
+   │   │               │                │   │   │                  │              └─> Context tag
+   │   │               │                │   │   │                  └─> Project tag
+   │   │               │                │   │   └─> Description with tags
+   │   │               │                │   └─> Urgency (H=High, M=Medium, L=Low)
+   │   │               │                └─> Importance (H=High, M=Medium, L=Low)
+   │   │               └─> Creation Date (added:YYYY-MM-DD)
+   │   └─> Completion Date (done:YYYY-MM-DD)
    └─> Completion Marker (x = completed, space = incomplete)
 ```
 
@@ -67,7 +68,7 @@ When editing a Markdown file, use these keybindings:
 
 - `<localleader>ta` - Add a new todo item at the cursor position
 - `<localleader>td` - Toggle the completion status of the todo on the current line (mark as done)
-- `<localleader>tp` - Set/change the priority of the todo on the current line
+- `<localleader>tp` - Set/change the importance and urgency of the todo on the current line
 
 ### Global Commands
 
@@ -84,7 +85,8 @@ When the todo list window is open, you can use these keybindings:
 - `r` - Refresh the list
 
 #### Filtering
-- `fp` - Filter by priority (A, B, C, D, or All)
+- `fi` - Filter by importance (High, Medium, Low, or All)
+- `fU` - Filter by urgency (High, Medium, Low, or All)
 - `fc` - Filter by context (@ tags)
 - `fP` - Filter by project (+ tags)
 - `fs` - Search in descriptions
@@ -93,7 +95,8 @@ When the todo list window is open, you can use these keybindings:
 - `fx` - Clear all filters
 
 #### Sorting
-- `sp` - Sort by priority
+- `si` - Sort by importance
+- `sU` - Sort by urgency
 - `sd` - Sort by creation date
 - `sc` - Sort by completion status
 
@@ -119,8 +122,9 @@ require("todo-nvim").setup({
 1. Open a Markdown file
 2. Press `<localleader>ta`
 3. Enter the todo description (can include +project and @context tags)
-4. Select a priority (A-D or None)
-5. Choose whether to add a due date
+4. Select importance (High, Medium, Low, or None)
+5. Select urgency (High, Medium, Low, or None)
+6. Choose whether to add a due date
    - If "Yes", a calendar picker will open where you can:
      - Navigate with h/l (day), j/k (week), H/L (month)
      - Press `<CR>` to select a date
@@ -129,15 +133,17 @@ require("todo-nvim").setup({
 
 Example result:
 ```markdown
-- [ ] (A) added:2024-01-15 implement new feature +backend @development due:2024-01-30
+- [ ] added:2024-01-15 i:H u:M implement new feature +backend @development due:2024-01-30
 ```
 
 ### Managing Todos
 
 Toggle completion with `<localleader>td`:
 ```markdown
-- [x] (A) done:2024-01-16 added:2024-01-15 implement new feature +backend @development
+- [x] done:2024-01-16 added:2024-01-15 i:H u:M implement new feature +backend @development
 ```
+
+Set/change importance and urgency with `<localleader>tp`.
 
 ### Viewing All Todos
 

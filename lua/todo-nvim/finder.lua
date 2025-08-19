@@ -68,6 +68,14 @@ function M.filter_todos(todos, filters)
       match = false
     end
     
+    if match and filters.importance and todo.importance ~= filters.importance then
+      match = false
+    end
+    
+    if match and filters.urgency and todo.urgency ~= filters.urgency then
+      match = false
+    end
+    
     if match and filters.project then
       local has_project = false
       for _, proj in ipairs(todo.project_tags) do
@@ -105,7 +113,7 @@ function M.filter_todos(todos, filters)
 end
 
 function M.sort_todos(todos, sort_by)
-  sort_by = sort_by or "priority"
+  sort_by = sort_by or "importance"
   
   local sort_funcs = {
     priority = function(a, b)
@@ -118,6 +126,18 @@ function M.sort_todos(todos, sort_by)
       else
         return false
       end
+    end,
+    importance = function(a, b)
+      local order = {H = 1, M = 2, L = 3}
+      local a_val = a.importance and order[a.importance] or 4
+      local b_val = b.importance and order[b.importance] or 4
+      return a_val < b_val
+    end,
+    urgency = function(a, b)
+      local order = {H = 1, M = 2, L = 3}
+      local a_val = a.urgency and order[a.urgency] or 4
+      local b_val = b.urgency and order[b.urgency] or 4
+      return a_val < b_val
     end,
     creation_date = function(a, b)
       if a.creation_date and b.creation_date then
@@ -139,7 +159,7 @@ function M.sort_todos(todos, sort_by)
     end
   }
   
-  local sort_func = sort_funcs[sort_by] or sort_funcs.priority
+  local sort_func = sort_funcs[sort_by] or sort_funcs.importance
   table.sort(todos, sort_func)
   
   return todos

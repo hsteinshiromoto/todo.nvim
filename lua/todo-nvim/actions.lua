@@ -11,47 +11,60 @@ function M.add_todo()
     end
     
     vim.ui.select(
-      {"A", "B", "C", "D", "None"},
+      {"High", "Medium", "Low", "None"},
       {
-        prompt = "Select priority: ",
+        prompt = "Select importance: ",
       },
-      function(priority_choice)
-        local priority = nil
-        if priority_choice and priority_choice ~= "None" then
-          priority = priority_choice
+      function(importance_choice)
+        local importance = nil
+        if importance_choice and importance_choice ~= "None" then
+          importance = importance_choice:sub(1, 1)  -- H, M, or L
         end
         
         vim.ui.select(
-          {"Yes", "No"},
+          {"High", "Medium", "Low", "None"},
           {
-            prompt = "Add due date? ",
+            prompt = "Select urgency: ",
           },
-          function(due_choice)
-            if due_choice == "Yes" then
-              calendar.create_calendar_window(function(selected_date)
-                if selected_date then
-                  input = input .. " due:" .. selected_date
-                end
-                
-                local todo_line = parser.create_todo(input, priority)
-                
-                local buf = vim.api.nvim_get_current_buf()
-                local row = vim.api.nvim_win_get_cursor(0)[1]
-                
-                vim.api.nvim_buf_set_lines(buf, row, row, false, {todo_line})
-                
-                vim.api.nvim_win_set_cursor(0, {row + 1, 0})
-              end)
-            else
-              local todo_line = parser.create_todo(input, priority)
-              
-              local buf = vim.api.nvim_get_current_buf()
-              local row = vim.api.nvim_win_get_cursor(0)[1]
-              
-              vim.api.nvim_buf_set_lines(buf, row, row, false, {todo_line})
-              
-              vim.api.nvim_win_set_cursor(0, {row + 1, 0})
+          function(urgency_choice)
+            local urgency = nil
+            if urgency_choice and urgency_choice ~= "None" then
+              urgency = urgency_choice:sub(1, 1)  -- H, M, or L
             end
+            
+            vim.ui.select(
+              {"Yes", "No"},
+              {
+                prompt = "Add due date? ",
+              },
+              function(due_choice)
+                if due_choice == "Yes" then
+                  calendar.create_calendar_window(function(selected_date)
+                    if selected_date then
+                      input = input .. " due:" .. selected_date
+                    end
+                    
+                    local todo_line = parser.create_todo(input, nil, importance, urgency)
+                    
+                    local buf = vim.api.nvim_get_current_buf()
+                    local row = vim.api.nvim_win_get_cursor(0)[1]
+                    
+                    vim.api.nvim_buf_set_lines(buf, row, row, false, {todo_line})
+                    
+                    vim.api.nvim_win_set_cursor(0, {row + 1, 0})
+                  end)
+                else
+                  local todo_line = parser.create_todo(input, nil, importance, urgency)
+                  
+                  local buf = vim.api.nvim_get_current_buf()
+                  local row = vim.api.nvim_win_get_cursor(0)[1]
+                  
+                  vim.api.nvim_buf_set_lines(buf, row, row, false, {todo_line})
+                  
+                  vim.api.nvim_win_set_cursor(0, {row + 1, 0})
+                end
+              end
+            )
           end
         )
       end
@@ -90,22 +103,41 @@ function M.set_priority()
   end
   
   vim.ui.select(
-    {"A", "B", "C", "D", "None"},
+    {"High", "Medium", "Low", "None"},
     {
-      prompt = "Select priority: ",
+      prompt = "Select importance: ",
     },
-    function(choice)
-      if not choice then return end
+    function(importance_choice)
+      if not importance_choice then return end
       
-      if choice == "None" then
-        todo.priority = nil
+      if importance_choice == "None" then
+        todo.importance = nil
       else
-        todo.priority = choice
+        todo.importance = importance_choice:sub(1, 1)
       end
       
-      local new_line = parser.format_todo(todo)
-      local row = vim.api.nvim_win_get_cursor(0)[1]
-      vim.api.nvim_buf_set_lines(0, row - 1, row, false, {new_line})
+      vim.ui.select(
+        {"High", "Medium", "Low", "None"},
+        {
+          prompt = "Select urgency: ",
+        },
+        function(urgency_choice)
+          if not urgency_choice then return end
+          
+          if urgency_choice == "None" then
+            todo.urgency = nil
+          else
+            todo.urgency = urgency_choice:sub(1, 1)
+          end
+          
+          -- Clear old priority format if exists
+          todo.priority = nil
+          
+          local new_line = parser.format_todo(todo)
+          local row = vim.api.nvim_win_get_cursor(0)[1]
+          vim.api.nvim_buf_set_lines(0, row - 1, row, false, {new_line})
+        end
+      )
     end
   )
 end
