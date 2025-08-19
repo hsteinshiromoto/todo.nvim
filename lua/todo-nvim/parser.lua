@@ -38,26 +38,19 @@ function M.parse_todo(line)
     rest = rest:sub(5)
   end
   
-  local date1, date2, remaining
-  if todo.completed then
-    date1, date2, remaining = rest:match("^(%d%d%d%d%-%d%d%-%d%d)%s+(%d%d%d%d%-%d%d%-%d%d)%s+(.*)$")
-    if date1 and date2 then
-      todo.completion_date = parse_date(date1)
-      todo.creation_date = parse_date(date2)
-      rest = remaining
-    else
-      date1, remaining = rest:match("^(%d%d%d%d%-%d%d%-%d%d)%s+(.*)$")
-      if date1 then
-        todo.completion_date = parse_date(date1)
-        rest = remaining
-      end
-    end
-  else
-    date1, remaining = rest:match("^(%d%d%d%d%-%d%d%-%d%d)%s+(.*)$")
-    if date1 then
-      todo.creation_date = parse_date(date1)
-      rest = remaining
-    end
+  -- Parse done: and added: dates from the description
+  local done_date = rest:match("done:(%d%d%d%d%-%d%d%-%d%d)")
+  if done_date then
+    todo.completion_date = parse_date(done_date)
+    -- Remove done:date from rest for cleaner description
+    rest = rest:gsub("done:%d%d%d%d%-%d%d%-%d%d%s*", "")
+  end
+  
+  local added_date = rest:match("added:(%d%d%d%d%-%d%d%-%d%d)")
+  if added_date then
+    todo.creation_date = parse_date(added_date)
+    -- Remove added:date from rest for cleaner description
+    rest = rest:gsub("added:%d%d%d%d%-%d%d%-%d%d%s*", "")
   end
   
   todo.description = rest
@@ -71,7 +64,10 @@ function M.parse_todo(line)
   end
   
   for key, value in rest:gmatch("(%w+):(%S+)") do
-    todo.special_tags[key] = value
+    -- Skip done and added as we already processed them
+    if key ~= "done" and key ~= "added" then
+      todo.special_tags[key] = value
+    end
   end
   
   return todo
@@ -92,15 +88,21 @@ function M.format_todo(todo)
     table.insert(parts, string.format("(%s)", todo.priority))
   end
   
+  -- Build description with dates as special tags
+  local desc_parts = {}
+  
   if todo.completed and todo.completion_date then
-    table.insert(parts, todo.completion_date.raw)
+    table.insert(desc_parts, "done:" .. todo.completion_date.raw)
   end
   
   if todo.creation_date then
-    table.insert(parts, todo.creation_date.raw)
+    table.insert(desc_parts, "added:" .. todo.creation_date.raw)
   end
   
-  table.insert(parts, todo.description)
+  -- Add the main description (without the dates as they're already parsed out)
+  table.insert(desc_parts, todo.description)
+  
+  table.insert(parts, table.concat(desc_parts, " "))
   
   return table.concat(parts, " ")
 end

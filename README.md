@@ -16,13 +16,13 @@ A Neovim plugin for managing todo items in Markdown files using the todo.txt for
 The plugin follows this format for todo items:
 
 ```
-- [x] (A) 2016-05-20 2016-04-30 measure space for +chapelShelving @chapel due:2016-05-30
-   │   │   │          │          │                  │              │        └─> Special key:value tag
-   │   │   │          │          │                  │              └─> Context tag
-   │   │   │          │          │                  └─> Project tag
-   │   │   │          │          └─> Description with tags
-   │   │   │          └─> Creation Date
-   │   │   └─> Completion Date
+- [x] (A) done:2016-05-20 added:2016-04-30 measure space for +chapelShelving @chapel due:2016-05-30
+   │   │   │               │                │                  │              │        └─> Special key:value tag
+   │   │   │               │                │                  │              └─> Context tag
+   │   │   │               │                │                  └─> Project tag
+   │   │   │               │                └─> Description with tags
+   │   │   │               └─> Creation Date (added:YYYY-MM-DD)
+   │   │   └─> Completion Date (done:YYYY-MM-DD)
    │   └─> Priority (optional)
    └─> Completion Marker (x = completed, space = incomplete)
 ```
@@ -122,14 +122,14 @@ require("todo-nvim").setup({
 
 Example result:
 ```markdown
-- [ ] (A) 2024-01-15 implement new feature +backend @development
+- [ ] (A) added:2024-01-15 implement new feature +backend @development
 ```
 
 ### Managing Todos
 
 Toggle completion with `<localleader>td`:
 ```markdown
-- [x] (A) 2024-01-15 2024-01-16 implement new feature +backend @development
+- [x] (A) done:2024-01-16 added:2024-01-15 implement new feature +backend @development
 ```
 
 ### Viewing All Todos
