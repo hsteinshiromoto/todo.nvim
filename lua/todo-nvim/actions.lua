@@ -1,75 +1,10 @@
 local M = {}
 local parser = require("todo-nvim.parser")
 local calendar = require("todo-nvim.calendar")
+local input = require("todo-nvim.input")
 
 function M.add_todo()
-  vim.ui.input({
-    prompt = "Enter todo description: ",
-  }, function(input)
-    if not input or input == "" then
-      return
-    end
-    
-    vim.ui.select(
-      {"High", "Medium", "Low", "None"},
-      {
-        prompt = "Select importance: ",
-      },
-      function(importance_choice)
-        local importance = nil
-        if importance_choice and importance_choice ~= "None" then
-          importance = importance_choice:sub(1, 1)  -- H, M, or L
-        end
-        
-        vim.ui.select(
-          {"High", "Medium", "Low", "None"},
-          {
-            prompt = "Select urgency: ",
-          },
-          function(urgency_choice)
-            local urgency = nil
-            if urgency_choice and urgency_choice ~= "None" then
-              urgency = urgency_choice:sub(1, 1)  -- H, M, or L
-            end
-            
-            vim.ui.select(
-              {"Yes", "No"},
-              {
-                prompt = "Add due date? ",
-              },
-              function(due_choice)
-                if due_choice == "Yes" then
-                  calendar.create_calendar_window(function(selected_date)
-                    if selected_date then
-                      input = input .. " due:" .. selected_date
-                    end
-                    
-                    local todo_line = parser.create_todo(input, nil, importance, urgency)
-                    
-                    local buf = vim.api.nvim_get_current_buf()
-                    local row = vim.api.nvim_win_get_cursor(0)[1]
-                    
-                    vim.api.nvim_buf_set_lines(buf, row, row, false, {todo_line})
-                    
-                    vim.api.nvim_win_set_cursor(0, {row + 1, 0})
-                  end)
-                else
-                  local todo_line = parser.create_todo(input, nil, importance, urgency)
-                  
-                  local buf = vim.api.nvim_get_current_buf()
-                  local row = vim.api.nvim_win_get_cursor(0)[1]
-                  
-                  vim.api.nvim_buf_set_lines(buf, row, row, false, {todo_line})
-                  
-                  vim.api.nvim_win_set_cursor(0, {row + 1, 0})
-                end
-              end
-            )
-          end
-        )
-      end
-    )
-  end)
+  input.create_todo_input()
 end
 
 function M.toggle_todo()

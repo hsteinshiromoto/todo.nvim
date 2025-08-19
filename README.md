@@ -120,18 +120,38 @@ require("todo-nvim").setup({
 ### Adding a Todo
 
 1. Open a Markdown file
-2. Press `<localleader>ta`
-3. Enter the todo description (can include +project and @context tags)
-4. Select importance (High, Medium, Low, or None)
-5. Select urgency (High, Medium, Low, or None)
-6. Choose whether to add a due date
-   - If "Yes", a calendar picker will open where you can:
-     - Navigate with h/l (day), j/k (week), H/L (month)
-     - Press `<CR>` to select a date
-     - Press `t` to jump to today
-     - Press `q` or `<Esc>` to cancel
+2. Press `<localleader>ta` to open the todo creation window
+3. The window opens with:
+   - Description field (prompts immediately for input)
+   - Importance: None (default) - Press H/M/L/N to change
+   - Urgency: None (default) - Press H/M/L/N to change  
+   - Due Date: Today's date (default) - Press 'c' to open calendar
 
-Example result:
+#### Todo Creation Window Controls:
+- `Tab` or `j` - Move to next field
+- `Shift-Tab` or `k` - Move to previous field
+- `i` - Edit description
+- `H/M/L/N` - Set High/Medium/Low/None for importance or urgency (depending on current field)
+- `c` - Open calendar picker when on due date field
+- `<CR>` - Save the todo
+- `q` or `<Esc>` - Cancel without saving
+
+#### Calendar Navigation (when opened with 'c'):
+- `h/l` - Previous/Next day
+- `j/k` - Previous/Next week
+- `H/L` - Previous/Next month
+- `t` - Jump to today
+- `<CR>` - Select date
+- `q/<Esc>` - Cancel
+
+Example results:
+
+With defaults (None importance/urgency, today's due date):
+```markdown
+- [ ] added:2024-01-15 implement new feature +backend @development due:2024-01-15
+```
+
+With customized values:
 ```markdown
 - [ ] added:2024-01-15 i:H u:M implement new feature +backend @development due:2024-01-30
 ```
