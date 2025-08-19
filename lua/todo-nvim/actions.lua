@@ -1,5 +1,6 @@
 local M = {}
 local parser = require("todo-nvim.parser")
+local calendar = require("todo-nvim.calendar")
 
 function M.add_todo()
   vim.ui.input({
@@ -14,20 +15,45 @@ function M.add_todo()
       {
         prompt = "Select priority: ",
       },
-      function(choice)
+      function(priority_choice)
         local priority = nil
-        if choice and choice ~= "None" then
-          priority = choice
+        if priority_choice and priority_choice ~= "None" then
+          priority = priority_choice
         end
         
-        local todo_line = parser.create_todo(input, priority)
-        
-        local buf = vim.api.nvim_get_current_buf()
-        local row = vim.api.nvim_win_get_cursor(0)[1]
-        
-        vim.api.nvim_buf_set_lines(buf, row, row, false, {todo_line})
-        
-        vim.api.nvim_win_set_cursor(0, {row + 1, 0})
+        vim.ui.select(
+          {"Yes", "No"},
+          {
+            prompt = "Add due date? ",
+          },
+          function(due_choice)
+            if due_choice == "Yes" then
+              calendar.create_calendar_window(function(selected_date)
+                if selected_date then
+                  input = input .. " due:" .. selected_date
+                end
+                
+                local todo_line = parser.create_todo(input, priority)
+                
+                local buf = vim.api.nvim_get_current_buf()
+                local row = vim.api.nvim_win_get_cursor(0)[1]
+                
+                vim.api.nvim_buf_set_lines(buf, row, row, false, {todo_line})
+                
+                vim.api.nvim_win_set_cursor(0, {row + 1, 0})
+              end)
+            else
+              local todo_line = parser.create_todo(input, priority)
+              
+              local buf = vim.api.nvim_get_current_buf()
+              local row = vim.api.nvim_win_get_cursor(0)[1]
+              
+              vim.api.nvim_buf_set_lines(buf, row, row, false, {todo_line})
+              
+              vim.api.nvim_win_set_cursor(0, {row + 1, 0})
+            end
+          end
+        )
       end
     )
   end)

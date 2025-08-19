@@ -5,6 +5,7 @@ A Neovim plugin for managing todo items in Markdown files using the todo.txt for
 ## Features
 
 - Add todo items with proper formatting including priority, dates, projects, contexts, and special tags
+- Interactive calendar picker for selecting due dates with week numbers
 - Toggle todo completion status
 - View all todos across your project/repository in a unified list
 - Filter todos by priority, project, context, completion status, or search text
@@ -119,10 +120,16 @@ require("todo-nvim").setup({
 2. Press `<localleader>ta`
 3. Enter the todo description (can include +project and @context tags)
 4. Select a priority (A-D or None)
+5. Choose whether to add a due date
+   - If "Yes", a calendar picker will open where you can:
+     - Navigate with h/l (day), j/k (week), H/L (month)
+     - Press `<CR>` to select a date
+     - Press `t` to jump to today
+     - Press `q` or `<Esc>` to cancel
 
 Example result:
 ```markdown
-- [ ] (A) added:2024-01-15 implement new feature +backend @development
+- [ ] (A) added:2024-01-15 implement new feature +backend @development due:2024-01-30
 ```
 
 ### Managing Todos
