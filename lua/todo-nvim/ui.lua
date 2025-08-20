@@ -8,7 +8,7 @@ M.state = {
   todos = {},
   filtered_todos = {},
   filters = {},
-  sort_by = "priority"
+  sort_by = "importance"
 }
 
 local function create_buffer()
@@ -32,7 +32,13 @@ local function format_todo_display(todo)
     display = "☐ "
   end
   
-  if todo.priority then
+  -- Show importance and urgency
+  if todo.importance or todo.urgency then
+    local i = todo.importance or "-"
+    local u = todo.urgency or "-"
+    display = display .. string.format("[i:%s u:%s] ", i, u)
+  elseif todo.priority then
+    -- Backward compatibility
     display = display .. string.format("(%s) ", todo.priority)
   end
   
@@ -81,14 +87,16 @@ function M.refresh_display()
   table.insert(lines, "Keybindings:")
   table.insert(lines, "  <CR>    - Go to todo")
   table.insert(lines, "  r       - Refresh")
-  table.insert(lines, "  fp      - Filter by priority")
+  table.insert(lines, "  fi      - Filter by importance")
+  table.insert(lines, "  fU      - Filter by urgency")
   table.insert(lines, "  fc      - Filter by context")  
   table.insert(lines, "  fP      - Filter by project")
   table.insert(lines, "  fs      - Search in descriptions")
   table.insert(lines, "  fu      - Show uncompleted only")
   table.insert(lines, "  fd      - Show completed only")
   table.insert(lines, "  fx      - Clear filters")
-  table.insert(lines, "  sp      - Sort by priority")
+  table.insert(lines, "  si      - Sort by importance")
+  table.insert(lines, "  sU      - Sort by urgency")
   table.insert(lines, "  sd      - Sort by date")
   table.insert(lines, "  sc      - Sort by completion")
   table.insert(lines, "  q       - Close window")
@@ -121,15 +129,30 @@ function M.setup_keymaps()
     end
   end, opts)
   
-  vim.keymap.set("n", "fp", function()
+  vim.keymap.set("n", "fi", function()
     vim.ui.select(
-      {"A", "B", "C", "D", "All"},
-      { prompt = "Filter by priority: " },
+      {"High", "Medium", "Low", "All"},
+      { prompt = "Filter by importance: " },
       function(choice)
         if choice == "All" then
-          M.state.filters.priority = nil
+          M.state.filters.importance = nil
         else
-          M.state.filters.priority = choice
+          M.state.filters.importance = choice:sub(1, 1)
+        end
+        M.apply_filters()
+      end
+    )
+  end, opts)
+  
+  vim.keymap.set("n", "fU", function()
+    vim.ui.select(
+      {"High", "Medium", "Low", "All"},
+      { prompt = "Filter by urgency: " },
+      function(choice)
+        if choice == "All" then
+          M.state.filters.urgency = nil
+        else
+          M.state.filters.urgency = choice:sub(1, 1)
         end
         M.apply_filters()
       end
@@ -193,8 +216,13 @@ function M.setup_keymaps()
     M.apply_filters()
   end, opts)
   
-  vim.keymap.set("n", "sp", function()
-    M.state.sort_by = "priority"
+  vim.keymap.set("n", "si", function()
+    M.state.sort_by = "importance"
+    M.apply_filters()
+  end, opts)
+  
+  vim.keymap.set("n", "sU", function()
+    M.state.sort_by = "urgency"
     M.apply_filters()
   end, opts)
   
