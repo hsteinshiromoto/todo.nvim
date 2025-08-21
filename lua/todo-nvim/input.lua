@@ -24,11 +24,11 @@ function M.create_todo_input()
       "                    📝 Create New Todo",
       "═══════════════════════════════════════════════════════════════",
       "",
-      "Description: " .. (state.description == "" and "[Enter description]" or state.description),
+      (state.current_field == 1 and "▶ " or "  ") .. "Description: " .. (state.description == "" and "[Enter description]" or state.description),
       "",
-      "Importance:  " .. (state.importance and state.importance or "None") .. " (H/M/L/N)",
-      "Urgency:     " .. (state.urgency and state.urgency or "None") .. " (H/M/L/N)",
-      "Due Date:    " .. state.due_date .. " (Press 'c' for calendar)",
+      (state.current_field == 2 and "▶ " or "  ") .. "Importance:  " .. (state.importance and state.importance or "None") .. " (H/M/L/N)",
+      (state.current_field == 3 and "▶ " or "  ") .. "Urgency:     " .. (state.urgency and state.urgency or "None") .. " (H/M/L/N)",
+      (state.current_field == 4 and "▶ " or "  ") .. "Due Date:    " .. state.due_date .. " (Press 'c' for calendar)",
       "",
       "───────────────────────────────────────────────────────────────",
       "Preview:",
@@ -140,6 +140,8 @@ function M.create_todo_input()
           refresh_display()
         end
       end)
+    else
+      vim.notify("Navigate to the Due Date field first (use Tab/j)", vim.log.levels.INFO)
     end
   end
   
