@@ -64,6 +64,15 @@ function M.filter_todos(todos, filters)
       match = false
     end
     
+    if match and filters.has_priority ~= nil then
+      local has_priority = todo.importance or todo.urgency or todo.due_date
+      if filters.has_priority and not has_priority then
+        match = false
+      elseif not filters.has_priority and has_priority then
+        match = false
+      end
+    end
+    
     if match and filters.priority and todo.priority ~= filters.priority then
       match = false
     end
@@ -112,10 +121,62 @@ function M.filter_todos(todos, filters)
   return filtered
 end
 
+local function calculate_priority_score(todo)
+  local score = 0
+  
+  -- Importance contributes to score (H=30, M=20, L=10)
+  if todo.importance then
+    local importance_scores = {H = 30, M = 20, L = 10}
+    score = score + (importance_scores[todo.importance] or 0)
+  end
+  
+  -- Urgency contributes to score (H=30, M=20, L=10)
+  if todo.urgency then
+    local urgency_scores = {H = 30, M = 20, L = 10}
+    score = score + (urgency_scores[todo.urgency] or 0)
+  end
+  
+  -- Due date proximity contributes to score
+  if todo.due_date then
+    local today = os.date("*t")
+    local today_time = os.time({year = today.year, month = today.month, day = today.day})
+    local due_time = os.time({year = todo.due_date.year, month = todo.due_date.month, day = todo.due_date.day})
+    local days_until_due = (due_time - today_time) / (24 * 60 * 60)
+    
+    if days_until_due < 0 then
+      score = score + 40  -- Overdue
+    elseif days_until_due <= 1 then
+      score = score + 35  -- Due today or tomorrow
+    elseif days_until_due <= 3 then
+      score = score + 25  -- Due in 3 days
+    elseif days_until_due <= 7 then
+      score = score + 15  -- Due this week
+    elseif days_until_due <= 14 then
+      score = score + 5   -- Due in 2 weeks
+    end
+  end
+  
+  return score
+end
+
 function M.sort_todos(todos, sort_by)
-  sort_by = sort_by or "importance"
+  sort_by = sort_by or "composite_priority"
   
   local sort_funcs = {
+    composite_priority = function(a, b)
+      local a_score = calculate_priority_score(a)
+      local b_score = calculate_priority_score(b)
+      
+      if a_score == b_score then
+        -- If scores are equal, sort by creation date (newer first)
+        if a.creation_date and b.creation_date then
+          return a.creation_date.raw > b.creation_date.raw
+        end
+        return false
+      end
+      
+      return a_score > b_score
+    end,
     priority = function(a, b)
       if a.priority and b.priority then
         return a.priority < b.priority
@@ -159,7 +220,7 @@ function M.sort_todos(todos, sort_by)
     end
   }
   
-  local sort_func = sort_funcs[sort_by] or sort_funcs.importance
+  local sort_func = sort_funcs[sort_by] or sort_funcs.composite_priority
   table.sort(todos, sort_func)
   
   return todos
