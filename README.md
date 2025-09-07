@@ -1,15 +1,17 @@
 # todo.nvim
 
-A Neovim plugin for managing todo items in Markdown files using the todo.txt format.
+A Neovim plugin for managing todo items in Markdown files using the todo.txt format with advanced prioritization.
 
 ## Features
 
-- Add todo items with proper formatting including priority, dates, projects, contexts, and special tags
+- Add todo items with proper formatting including importance, urgency, dates, projects, contexts, and special tags
+- **Smart prioritization**: Automatically prioritizes tasks based on importance, urgency, and due date proximity
+- **Due date support**: Track task deadlines with visual indicators for overdue and upcoming tasks
 - Interactive calendar picker for selecting due dates with week numbers
 - Toggle todo completion status
 - View all todos across your project/repository in a unified list
-- Filter todos by priority, project, context, completion status, or search text
-- Sort todos by priority, creation date, or completion status
+- **Intelligent filtering**: Filter todos by importance, urgency, priority indicators, project, context, completion status, or search text
+- **Composite sorting**: Advanced sorting algorithm that combines multiple priority factors
 - Navigate directly to todo items in their source files
 
 ## Todo Format
@@ -79,6 +81,8 @@ When editing a Markdown file, use these keybindings:
 
 When the todo list window is open, you can use these keybindings:
 
+**Note**: By default, the todo list opens showing **incomplete tasks with priority indicators** (importance, urgency, or due dates), sorted by **composite priority score**.
+
 #### Navigation
 - `<CR>` - Jump to the todo item in its source file
 - `q` - Close the window
@@ -87,16 +91,18 @@ When the todo list window is open, you can use these keybindings:
 #### Filtering
 - `fi` - Filter by importance (High, Medium, Low, or All)
 - `fU` - Filter by urgency (High, Medium, Low, or All)
+- `fp` - **Toggle priority filter** - Show tasks with/without importance, urgency, or due dates
 - `fc` - Filter by context (@ tags)
 - `fP` - Filter by project (+ tags)
 - `fs` - Search in descriptions
 - `fu` - Show only uncompleted todos
 - `fd` - Show only completed todos
-- `fx` - Clear all filters
+- `fx` - Clear all filters (returns to empty filter state)
 
 #### Sorting
-- `si` - Sort by importance
-- `sU` - Sort by urgency
+- `sp` - **Sort by composite priority** (combines importance, urgency, and due date proximity)
+- `si` - Sort by importance only
+- `sU` - Sort by urgency only
 - `sd` - Sort by creation date
 - `sc` - Sort by completion status
 
@@ -169,11 +175,49 @@ Set/change importance and urgency with `<localleader>tp`.
 
 Press `<localleader>tl` to open the todo list window. You'll see all todos from Markdown files in your project, with options to filter and sort them.
 
+#### Default View
+The todo list opens with smart defaults:
+- **Shows incomplete tasks only** - Completed tasks are hidden
+- **Shows priority tasks only** - Tasks with importance, urgency, or due dates
+- **Sorted by composite priority** - Tasks are ordered by combined priority score
+
+#### Priority Scoring System
+Tasks are automatically scored based on:
+- **Importance**: High = 30 points, Medium = 20 points, Low = 10 points
+- **Urgency**: High = 30 points, Medium = 20 points, Low = 10 points  
+- **Due Date Proximity**:
+  - Overdue = 40 points
+  - Due today/tomorrow = 35 points
+  - Due within 3 days = 25 points
+  - Due within a week = 15 points
+  - Due within 2 weeks = 5 points
+
+#### Due Date Indicators
+The list displays visual warnings for time-sensitive tasks:
+- `⚠ OVERDUE (Xd)` - Task is X days overdue
+- `⚠ DUE TODAY` - Task is due today
+- `⚠ DUE TOMORROW` - Task is due tomorrow
+- `due:Xd` - Task is due in X days (for tasks due within a week)
+- `due:YYYY-MM-DD` - Full date for tasks due later
+
 ## License
 
 MIT
 
-## Future
+## Recent Updates
 
-- [ ] Improve navigation of todo list window.
-- [ ] Add urgent vs import categories.
+### v0.2.0 (Unreleased)
+- ✅ Added support for due dates with `due:YYYY-MM-DD` format
+- ✅ Implemented composite priority scoring combining importance, urgency, and due dates
+- ✅ Added smart default filters showing incomplete priority tasks
+- ✅ Enhanced UI with visual indicators for overdue and upcoming tasks
+- ✅ Added priority filter toggle (`fp` keybinding)
+- ✅ Added composite priority sort (`sp` keybinding)
+
+## Roadmap
+
+- [ ] Add recurring task support
+- [ ] Implement task dependencies
+- [ ] Add export functionality (JSON, CSV)
+- [ ] Create task statistics dashboard
+- [ ] Add time tracking features
