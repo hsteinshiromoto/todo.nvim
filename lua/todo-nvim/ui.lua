@@ -7,8 +7,11 @@ M.state = {
   win = nil,
   todos = {},
   filtered_todos = {},
-  filters = {},
-  sort_by = "importance"
+  filters = {
+    completed = false,
+    has_priority = true
+  },
+  sort_by = "composite_priority"
 }
 
 local function create_buffer()
@@ -32,11 +35,41 @@ local function format_todo_display(todo)
     display = "☐ "
   end
   
-  -- Show importance and urgency
-  if todo.importance or todo.urgency then
-    local i = todo.importance or "-"
-    local u = todo.urgency or "-"
-    display = display .. string.format("[i:%s u:%s] ", i, u)
+  -- Show importance, urgency, and due date
+  local indicators = {}
+  
+  if todo.importance then
+    table.insert(indicators, "i:" .. todo.importance)
+  end
+  
+  if todo.urgency then
+    table.insert(indicators, "u:" .. todo.urgency)
+  end
+  
+  if todo.due_date then
+    -- Calculate days until due
+    local today = os.date("*t")
+    local today_time = os.time({year = today.year, month = today.month, day = today.day})
+    local due_time = os.time({year = todo.due_date.year, month = todo.due_date.month, day = todo.due_date.day})
+    local days_until = math.floor((due_time - today_time) / (24 * 60 * 60))
+    
+    local due_indicator = ""
+    if days_until < 0 then
+      due_indicator = string.format("⚠ OVERDUE (%dd)", -days_until)
+    elseif days_until == 0 then
+      due_indicator = "⚠ DUE TODAY"
+    elseif days_until == 1 then
+      due_indicator = "⚠ DUE TOMORROW"
+    elseif days_until <= 7 then
+      due_indicator = string.format("due:%dd", days_until)
+    else
+      due_indicator = string.format("due:%s", todo.due_date.raw)
+    end
+    table.insert(indicators, due_indicator)
+  end
+  
+  if #indicators > 0 then
+    display = display .. "[" .. table.concat(indicators, " ") .. "] "
   elseif todo.priority then
     -- Backward compatibility
     display = display .. string.format("(%s) ", todo.priority)
@@ -92,9 +125,11 @@ function M.refresh_display()
   table.insert(lines, "  fc      - Filter by context")  
   table.insert(lines, "  fP      - Filter by project")
   table.insert(lines, "  fs      - Search in descriptions")
+  table.insert(lines, "  fp      - Toggle priority filter (i/u/due)")
   table.insert(lines, "  fu      - Show uncompleted only")
   table.insert(lines, "  fd      - Show completed only")
-  table.insert(lines, "  fx      - Clear filters")
+  table.insert(lines, "  fx      - Clear all filters")
+  table.insert(lines, "  sp      - Sort by priority (composite)")
   table.insert(lines, "  si      - Sort by importance")
   table.insert(lines, "  sU      - Sort by urgency")
   table.insert(lines, "  sd      - Sort by date")
@@ -211,8 +246,24 @@ function M.setup_keymaps()
     M.apply_filters()
   end, opts)
   
+  vim.keymap.set("n", "fp", function()
+    if M.state.filters.has_priority == nil then
+      M.state.filters.has_priority = true
+    elseif M.state.filters.has_priority == true then
+      M.state.filters.has_priority = false
+    else
+      M.state.filters.has_priority = nil
+    end
+    M.apply_filters()
+  end, opts)
+  
   vim.keymap.set("n", "fx", function()
     M.state.filters = {}
+    M.apply_filters()
+  end, opts)
+  
+  vim.keymap.set("n", "sp", function()
+    M.state.sort_by = "composite_priority"
     M.apply_filters()
   end, opts)
   

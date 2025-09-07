@@ -16,6 +16,7 @@ function M.parse_todo(line)
     priority = nil,
     importance = nil,
     urgency = nil,
+    due_date = nil,
     completion_date = nil,
     creation_date = nil,
     description = "",
@@ -69,6 +70,13 @@ function M.parse_todo(line)
     rest = rest:gsub("u:[HML]%s*", "")
   end
   
+  -- Parse due date
+  local due_date = rest:match("due:(%d%d%d%d%-%d%d%-%d%d)")
+  if due_date then
+    todo.due_date = parse_date(due_date)
+    rest = rest:gsub("due:%d%d%d%d%-%d%d%-%d%d%s*", "")
+  end
+  
   todo.description = rest
   
   for project in rest:gmatch("%+(%S+)") do
@@ -80,8 +88,8 @@ function M.parse_todo(line)
   end
   
   for key, value in rest:gmatch("(%w+):(%S+)") do
-    -- Skip done, added, i, and u as we already processed them
-    if key ~= "done" and key ~= "added" and key ~= "i" and key ~= "u" then
+    -- Skip done, added, i, u, and due as we already processed them
+    if key ~= "done" and key ~= "added" and key ~= "i" and key ~= "u" and key ~= "due" then
       todo.special_tags[key] = value
     end
   end
